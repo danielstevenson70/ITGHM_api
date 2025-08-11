@@ -1,0 +1,12 @@
+{
+  "name": "itghm_api",
+  "version": "1.0.0",
+  "description": "# This can also be used to try and find out of your comfort zone. Let's say you wanted some heavy  # Death Metal but you know that they have scary lyrics, scary album covers but wanted something less.  # Type in things that could potentially relate to what you are searching for, adding in Death metal, # there are fun genres such as \"dummy metal\" beacause they're truly just goofy and fun but still keep # the same vibe as death metal, its just not meant to be taken as \"serious\" as some can be",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
