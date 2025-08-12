@@ -85,7 +85,7 @@ async def get_user_id(current_user: User = Depends(get_current_user_token)):
 @app.get('/artists')
 async def artists(search_artist: str):
     artist_result = ytmusic.search(search_artist)
-    artist_id = artist_result[0].get('artists')[0].get('id')
+    artist_result = artist_result[0].get('artists')[0].get('id')
     artists_results = ytmusic.get_artist  # Replace with actual implementation
     return artists_results
 
