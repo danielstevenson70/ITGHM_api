@@ -1,4 +1,5 @@
 import uvicorn
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
@@ -15,6 +16,14 @@ from models.tokens import Token, BlacklistedToken, create_access_token
 import config
 
 from services import get_current_user_token, create_user, get_user
+
+from ytmusicapi import YTMusic
+
+ytmusic = YTMusic()
+
+# Import or initialize metallum here
+# Example: from metallumapi import Metallum
+# metallum = Metallum()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -33,7 +42,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Welcome to the Garden of Heavy and Metal!"}
 
 
 @app.post('/register', response_model=UserSchema)
@@ -73,6 +82,7 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 async def get_user_id(current_user: User = Depends(get_current_user_token)):
     return {"email": current_user.email, "id": current_user.id}
 
+@app.get(/getartist)
 
 @app.get('/songs')
 async def songs(search_artist_string: str):
@@ -85,11 +95,27 @@ async def songs(search_artist_string: str):
 # ...
 # get thumbnails
 
+@app.get('/genre')
+async def genre(search_artist_genre: str):
+    artist_result = metallum.search(search_artist_genre)
+    genre_id = artist_result[0].get('genre').get('artists')[0].get('id')
+    genre_results = metallum.get_genre
+    return genre_results
+
+# @app.get('/tourdates')
+# async def tourdates(search_artist_tourdates: str):
+#     artist_result = 
+#     artist_id = 
+#     tourdates_results =
+#     return tourdates
+
 @app.get('/randomband')
 async def randomband():
     artist_result = ytmusic(randomband)
     artist = artist_result[0].get('artist')[0].get('id')
     randomband_results = ytmusic.get_artist
+    return randomband_results
+
 
 @app.post('/logout')
 def logout(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
