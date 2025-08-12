@@ -82,7 +82,13 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 async def get_user_id(current_user: User = Depends(get_current_user_token)):
     return {"email": current_user.email, "id": current_user.id}
 
-@app.get(/getartist)
+@app.get('/artists')
+async def artists(search_artist: str):
+    artist_result = ytmusic.search(search_artist)
+    artist_id = artist_result[0].get('artists')[0].get('id')
+    artists_results = ytmusic.get_artist  # Replace with actual implementation
+    return artists_results
+
 
 @app.get('/songs')
 async def songs(search_artist_string: str):
@@ -95,12 +101,12 @@ async def songs(search_artist_string: str):
 # ...
 # get thumbnails
 
-@app.get('/genre')
-async def genre(search_artist_genre: str):
-    artist_result = metallum.search(search_artist_genre)
-    genre_id = artist_result[0].get('genre').get('artists')[0].get('id')
-    genre_results = metallum.get_genre
-    return genre_results
+# @app.get('/genre')
+# async def genre(search_artist_genre: str):
+#     artist_result = metallum.search(search_artist_genre)
+#     genre_id = artist_result[0].get('genre').get('artists')[0].get('id')
+#     genre_results = metallum.get_genre
+#     return genre_results
 
 # @app.get('/tourdates')
 # async def tourdates(search_artist_tourdates: str):
