@@ -1,6 +1,6 @@
 import uvicorn
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
@@ -13,7 +13,10 @@ from models.urls import Urls
 from models.users import User, UserRegistrationSchema, UserSchema, UserAccountSchema
 from models.tokens import Token, BlacklistedToken, create_access_token
 
+import os
 import config
+import requests
+from dotenv import load_dotenv
 
 from services import get_current_user_token, create_user, get_user
 
@@ -24,6 +27,10 @@ ytmusic = YTMusic()
 # Import or initialize metallum here
 # Example: from metallumapi import Metallum
 # metallum = Metallum()
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -137,6 +144,25 @@ def logout(token: str = Depends(oauth2_scheme), session: Session = Depends(get_s
         )
     return {"details": "Logged out"}
 
+@app.post("/generate")
+async def generate(request: Request):
+    body = await request.json()
+    prompt = body.get("prompt")
+
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": "gpt-4o-mini",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+    )
+
+    data = response.json()
+    return {"output": data["choices"][0]["message"]["content"]}
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='localhost', port=8000, reload=True)
