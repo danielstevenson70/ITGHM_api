@@ -1,6 +1,8 @@
+from re import search
+import metallum
 import uvicorn
 
-from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi import APIRouter, FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
@@ -17,12 +19,14 @@ import os
 import config
 import requests
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 from services import get_current_user_token, create_user, get_user
 
 from ytmusicapi import YTMusic
 
 ytmusic = YTMusic()
+youtube_router = APIRouter(prefix="/youtube")
 
 # Import or initialize metallum here
 # Example: from metallumapi import Metallum
@@ -61,6 +65,7 @@ def register_user(payload: UserRegistrationSchema, session: Session = Depends(ge
 
 @app.post('/login', status_code=200)
 async def login(payload: UserAccountSchema, session: Session = Depends(get_session)):
+    print("anything")
     try:
         user: User = get_user(email=payload.email, session=session)
     except:
@@ -84,17 +89,15 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
     )
     return Token(access_token=access_token, token_type="bearer")
 
-
-@app.get('/getUser', status_code=200)
-async def get_user_id(current_user: User = Depends(get_current_user_token)):
-    return {"email": current_user.email, "id": current_user.id}
+class ArtistQuery(BaseModel):
+    search_artist: str
 
 @app.get('/artists')
-async def artists(search_artist: str):
-    artist_result = ytmusic.search(search_artist)
-    artist_result = artist_result[0].get('artists')[0].get('id')
-    artists_results = ytmusic.get_artist  # Replace with actual implementation
-    return artists_results
+async def artists(query: ArtistQuery):
+    artist_result = ytmusic.search(query.search_artist)
+    artist_id = artist_result[0].get('artists')[0].get('id')
+    artists_results = ytmusic.get_videos(artist_id)  # Replace with actual implementation
+    return { "artist": artists_results }
 
 
 @app.get('/songs')
@@ -108,12 +111,12 @@ async def songs(search_artist_string: str):
 # ...
 # get thumbnails
 
-# @app.get('/genre')
-# async def genre(search_artist_genre: str):
-#     artist_result = metallum.search(search_artist_genre)
-#     genre_id = artist_result[0].get('genre').get('artists')[0].get('id')
-#     genre_results = metallum.get_genre
-#     return genre_results
+@app.get('/genre')
+async def genre(search_artist_genre: str):
+    genre_results = search(search_artist_genre)
+    genre_id = genre_results[0].get('genre').get('artists')[0].get('id')
+    metallum_genre = metallum.get_genre(genre_id)
+    return metallum_genre
 
 # @app.get('/tourdates')
 # async def tourdates(search_artist_tourdates: str):
@@ -125,8 +128,8 @@ async def songs(search_artist_string: str):
 @app.get('/randomband')
 async def randomband():
     artist_result = ytmusic(randomband)
-    artist = artist_result[0].get('artist')[0].get('id')
-    randomband_results = ytmusic.get_artist
+    artist_result = artist_result[0].get('artist')[0].get('id')
+    randomband_results = ytmusic.get_artist_
     return randomband_results
 
 

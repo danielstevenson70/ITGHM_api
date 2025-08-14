@@ -1,23 +1,27 @@
 CREATE TABLE login(
     id serial PRIMARY KEY,
     name varchar(200)
-)
+);
+CREATE TABLE user(
+    id serial PRIMARY KEY,
+    name varchar(200)
+);
 CREATE TABLE shotinthedark(
     id serial PRIMARY KEY,
     name varchar(200)
-)
+);
 CREATE TABLE register(
     id serial PRIMARY KEY,
     name varchar(200)
-)
+);
 CREATE TABLE songs(
     id serial PRIMARY KEY,
-    name varchar(200)
-)
+    values numeric[]
+);
 CREATE TABLE genre(
     id serial PRIMARY KEY,
     name varchar(200)
-)
+);
 CREATE TABLE bands(
     id serial PRIMARY KEY,
     band_id int,
