@@ -28,6 +28,7 @@ from ytmusicapi import YTMusic
 ytmusic = YTMusic()
 youtube_router = APIRouter(prefix="/youtube")
 
+
 # Import or initialize metallum here
 # Example: from metallumapi import Metallum
 # metallum = Metallum()
