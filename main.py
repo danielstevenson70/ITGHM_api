@@ -1,4 +1,6 @@
 from re import search
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import metallum
 import uvicorn
 
@@ -93,12 +95,66 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 class ArtistQuery(BaseModel):
     search_artist: str
 
-@app.get('/artists')
-async def artists(query: ArtistQuery):
-    artist_result = ytmusic.search(query.search_artist)
-    artist_id = artist_result[0].get('artists')[0].get('id')
-    artists_results = ytmusic.get_videos(artist_id)  # Replace with actual implementation
-    return { "artist": artists_results }
+@app.get('/genre')
+async def genre(searched_genre: str):
+    print('\ntest 123\n')
+    # artist_result = ytmusic.search(searched_artists)
+    # artist_id = artist_result[0].get('artists')[0].get('id')
+    # artists_results = ytmusic.get_videos(artist_id)  # Replace with actual implementation
+    # return { "artist": artists_results }
+
+    # TODO: HIDE THESE IN .env BEFORE COMMITING!!!!!!
+    DB_HOST = "db.zimpwfsnnunvmnetozot.supabase.co"
+    DB_PORT = 5432
+    DB_NAME = "postgres"
+    DB_USER = "postgres"
+    DB_PASSWORD = "H?c*c$!kW5NGMi/"
+
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        sslmode='require'  # Supabase requires SSL
+    )
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    print("""
+    select
+        band_id as id,
+        band_name as name
+    from
+        bands
+    join lateral (
+        select
+        name,
+        UNNEST("Bands") as band_id
+        from
+        genre
+    ) as genre_band_ids on genre_band_ids.band_id = bands.id
+    where
+        genre_band_ids.name = %s
+    """, (searched_genre))
+    cur.execute("""
+    select
+        band_id as id,
+        band_name as name
+    from
+        bands
+    join lateral (
+        select
+        name,
+        UNNEST("Bands") as band_id
+        from
+        genre
+    ) as genre_band_ids on genre_band_ids.band_id = bands.id
+    where
+        genre_band_ids.name = %s
+    """, (searched_genre,))
+    bands = cur.fetchall()
+    return bands
 
 
 @app.get('/songs')
@@ -108,16 +164,16 @@ async def songs(search_artist_string: str):
     song_results = ytmusic.get_artist(artist_id)  # Replace with actual implementation
     return song_results  # to populate more of the page if needed
 
+return(
+    {
+        "url": "https://lh3.googleusercontent.com/cfc1cp85SvWi0PYmiOL4KWSz1WF1ZBN4hGfUQugVSsMvmoz8-i2wzYm6Z8-CnJRBDff3vOMj95apta8H=w60-h60-l90-rj",
+        "width": 60,
+        "height": 60
+    },
+)
 # OR grab the thumbnails
 # ...
 # get thumbnails
-
-@app.get('/genre')
-async def genre(search_artist_genre: str):
-    genre_results = search(search_artist_genre)
-    genre_id = genre_results[0].get('genre').get('artists')[0].get('id')
-    metallum_genre = metallum.get_genre(genre_id)
-    return metallum_genre
 
 # @app.get('/tourdates')
 # async def tourdates(search_artist_tourdates: str):
