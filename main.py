@@ -103,12 +103,6 @@ async def genre(searched_genre: str):
     # artists_results = ytmusic.get_videos(artist_id)  # Replace with actual implementation
     # return { "artist": artists_results }
 
-    # TODO: HIDE THESE IN .env BEFORE COMMITING!!!!!!
-    DB_HOST = "db.zimpwfsnnunvmnetozot.supabase.co"
-    DB_PORT = 5432
-    DB_NAME = "postgres"
-    DB_USER = "postgres"
-    DB_PASSWORD = "H?c*c$!kW5NGMi/"
 
     conn = psycopg2.connect(
         host=DB_HOST,
@@ -161,8 +155,13 @@ async def genre(searched_genre: str):
 async def songs(search_artist_string: str):
     artist_result = ytmusic.search(search_artist_string)
     artist_id = artist_result[0].get('artists')[0].get('id')
-    song_results = ytmusic.get_artist(artist_id)  # Replace with actual implementation
-    return song_results  # to populate more of the page if needed
+    song_results = song_results.get('thumbnail_list')
+    thumbnail_list = []
+    for song in song_result.get('songs', {}).get('results'):
+        if not song.get('thumbnails'):
+            continue
+        thumbnail_list.append(song.get('thumbnails')[-1])
+    return thumbnail_list
 
 # return(
 #     {
