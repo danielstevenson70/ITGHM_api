@@ -164,13 +164,13 @@ async def songs(search_artist_string: str):
     song_results = ytmusic.get_artist(artist_id)  # Replace with actual implementation
     return song_results  # to populate more of the page if needed
 
-return(
-    {
-        "url": "https://lh3.googleusercontent.com/cfc1cp85SvWi0PYmiOL4KWSz1WF1ZBN4hGfUQugVSsMvmoz8-i2wzYm6Z8-CnJRBDff3vOMj95apta8H=w60-h60-l90-rj",
-        "width": 60,
-        "height": 60
-    },
-)
+# return(
+#     {
+#         "url": "https://lh3.googleusercontent.com/cfc1cp85SvWi0PYmiOL4KWSz1WF1ZBN4hGfUQugVSsMvmoz8-i2wzYm6Z8-CnJRBDff3vOMj95apta8H=w60-h60-l90-rj",
+#         "width": 60,
+#         "height": 60
+#     },
+# )
 # OR grab the thumbnails
 # ...
 # get thumbnails
