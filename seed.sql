@@ -13,5 +13,6 @@ INSERT INTO genre (name)
     VALUES ('Deathcore'),
     ('Metalcore'),
     ('Progressive Metal')
-    ('Djent');
+    ('Death Metal');
+    
 

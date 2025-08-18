@@ -92,24 +92,58 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
     )
     return Token(access_token=access_token, token_type="bearer")
 
-class ArtistQuery(BaseModel):
-    search_artist: str
+
+@app.get('/bands')
+async def get_bands(limit: int = 5, search_string: str = None):
+    print(f"DEBUG: /bands endpoint called with limit={limit}, search_string={search_string}")
+    print(f"DEBUG: DB_HOST={config.DB_HOST}")
+    print(f"DEBUG: DB_NAME={config.DB_NAME}")
+
+    conn = psycopg2.connect(
+        host=config.DB_HOST,  # Make sure you have these config values
+        port=config.DB_PORT,
+        dbname=config.DB_NAME,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
+        sslmode='require'
+    )
+    print("DEBUG: Database connection successful")
+    
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    
+    if search_string:
+        print(f"DEBUG: Searching for bands with '{search_string}'")
+        # Search for bands with the search string
+        cur.execute("""
+            SELECT id, band_name as name 
+            FROM bands 
+            WHERE band_name ILIKE %s 
+            LIMIT %s
+        """, (f'%{search_string}%', limit))
+    else:
+        print("DEBUG: Getting all bands")
+
+        # Get all bands
+        cur.execute("""
+            SELECT id, band_name as name 
+            FROM bands 
+            LIMIT %s
+        """, (limit,))
+    
+    bands = cur.fetchall()
+    cur.close()
+    conn.close()
+    return bands
+
 
 @app.get('/genre')
 async def genre(searched_genre: str):
-    print('\ntest 123\n')
-    # artist_result = ytmusic.search(searched_artists)
-    # artist_id = artist_result[0].get('artists')[0].get('id')
-    # artists_results = ytmusic.get_videos(artist_id)  # Replace with actual implementation
-    # return { "artist": artists_results }
-
-
     conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        host=config.DB_HOST,  # Make sure you have these config values
+        port=config.DB_PORT,
+        dbname=config.DB_NAME,
+        user=config.DB_USER,
+        password=config.DB_PASSWORD,
         sslmode='require'  # Supabase requires SSL
     )
 
@@ -151,28 +185,21 @@ async def genre(searched_genre: str):
     return bands
 
 
-@app.get('/songs')
+@app.get("/songs")
 async def songs(search_artist_string: str):
-    artist_result = ytmusic.search(search_artist_string)
-    artist_id = artist_result[0].get('artists')[0].get('id')
-    song_results = song_results.get('thumbnail_list')
+    # Search for the artist or songs
+    search_results = ytmusic.search(search_artist_string, filter="songs")
+    
     thumbnail_list = []
-    for song in song_result.get('songs', {}).get('results'):
-        if not song.get('thumbnails'):
-            continue
-        thumbnail_list.append(song.get('thumbnails')[-1])
+    for song in search_results:
+        thumbnails = song.get("thumbnails")
+        if thumbnails:
+            # Grab the last (largest) thumbnail
+            thumbnail_list.append(thumbnails[-1])
+    
     return thumbnail_list
 
-# return(
-#     {
-#         "url": "https://lh3.googleusercontent.com/cfc1cp85SvWi0PYmiOL4KWSz1WF1ZBN4hGfUQugVSsMvmoz8-i2wzYm6Z8-CnJRBDff3vOMj95apta8H=w60-h60-l90-rj",
-#         "width": 60,
-#         "height": 60
-#     },
-# )
-# OR grab the thumbnails
-# ...
-# get thumbnails
+
 
 # @app.get('/tourdates')
 # async def tourdates(search_artist_tourdates: str):
