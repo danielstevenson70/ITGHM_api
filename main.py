@@ -94,24 +94,32 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 
 @app.get('/bands')
 async def band_name(search: str, session: Session = Depends(get_session)):
-    statement = select(Band, Songs).join(Songs).where(func.lower(Band.band_name) == search.lower())
-    songs = session.exec(statement).all()
-    return songs
+    statement = select(Band).where(func.lower(Band.band_name) == search.lower())
+    band_info = session.exec(statement).one_or_none()
+    song_id_array = band_info.song_id
+    complete_song_array = []
+    for song_id in song_id_array:
+        statement = select(Songs).where(Songs.id == song_id)
+        song_name = session.exec(statement).one_or_none()
+        complete_song_array.append(song_name)
+    return {"name": band_info.band_name, "songs": complete_song_array}
 
 
 @app.get('/genre')
-async def genres(searched_genre: str, session: Session = Depends(get_session)):
-    statement = select(Genres).where(func.lower(Genres.name) == searched_genre.lower())
-    bands = session.exec(statement).all()
-    return bands
+async def genres(search_genre: int, session: Session = Depends(get_session)):
+    statement = select(Genres).where(Genres.id == search_genre)  
+    genre_info = session.exec(statement).one_or_none()
+    band_id_array = genre_info.Bands
+    complete_band_array = []
+    for band_id in band_id_array:
+        statement = select(Band).where(Band.id == band_id)
+        band_array = session.exec(statement).all()
+        complete_band_array.append(band_array)
+    return {"name": genre_info.name, "bands": complete_band_array}
 
 
-@app.get("/songs")
-async def songs(search_artist_string: str):
-    select(Song).where(Song.id == id)
-    songs = ["A Call Beyond", "Failure Will Follow", "Feed A Piegon, Breed A Rat", "CHAIN", "It Comes\
-    In Waves"]
-    song_ids = [5, 6, 7, 8, 9]
+# @app.get("/songs")
+# async def songs(search_artist_string: str):
 
 
 
@@ -122,12 +130,12 @@ async def songs(search_artist_string: str):
 #     tourdates_results =
 #     return tourdates
 
-@app.get('/randomband')
-async def randomband():
-    artist_result = ytmusic(randomband)
-    artist_result = artist_result[0].get('artist')[0].get('id')
-    randomband_results = ytmusic.get_artist_
-    return randomband_results
+# @app.get('/randomband')
+# async def randomband():
+#     artist_result = ytmusic(randomband)
+#     artist_result = artist_result[0].get('artist')[0].get('id')
+#     randomband_results = ytmusic.get_artist_
+#     return randomband_results
 
 
 @app.post('/logout')

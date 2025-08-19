@@ -7,4 +7,3 @@ from sqlalchemy import Column, String
 class Songs(Base, table=True):
     __tablename__ = "songs"
     name: str = Field()
-    song_id: List[str] = Field(sa_column=Column(ARRAY(String)))
