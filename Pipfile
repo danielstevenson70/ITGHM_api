@@ -8,14 +8,13 @@ fastapi = "*"
 uvicorn = "*"
 metallum = "*"
 ytmusicapi = "*"
-pydantic = "*"
 alembic = "*"
 psycopg2-binary = "*"
 python-dotenv = "*"
 sqlmodel = "*"
 bcrypt = "*"
 pyjwt = "*"
-dbus-python = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 

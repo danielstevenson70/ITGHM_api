@@ -1,5 +1,5 @@
+from calendar import day_name
 from re import search
-import metallum
 import uvicorn
 
 from fastapi import APIRouter, FastAPI, Depends, HTTPException, Request, status
@@ -11,6 +11,7 @@ from sqlmodel import Session, select, func
 from sqlalchemy.exc import IntegrityError
 from db import get_session
 
+from models.songs import Songs
 from models.bands import Band
 from models.genres import Genres
 from models.users import User, UserRegistrationSchema, UserSchema, UserAccountSchema
@@ -93,9 +94,9 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 
 @app.get('/bands')
 async def band_name(search: str, session: Session = Depends(get_session)):
-    statement = select(Band).where(func.lower(Band.name) == search.lower())
-    Band = session.exec(statement).all()
-    return band_name
+    statement = select(Band, Songs).join(Songs).where(func.lower(Band.band_name) == search.lower())
+    songs = session.exec(statement).all()
+    return songs
 
 
 @app.get('/genre')
@@ -107,17 +108,10 @@ async def genres(searched_genre: str, session: Session = Depends(get_session)):
 
 @app.get("/songs")
 async def songs(search_artist_string: str):
-    # Search for the artist or songs
-    search_results = ytmusic.search(search_artist_string, filter="songs")
-    
-    thumbnail_list = []
-    for song in search_results:
-        thumbnails = song.get("thumbnails")
-        if thumbnails:
-            # Grab the last (largest) thumbnail
-            thumbnail_list.append(thumbnails[-1])
-    
-    return thumbnail_list
+    select(Song).where(Song.id == id)
+    songs = ["A Call Beyond", "Failure Will Follow", "Feed A Piegon, Breed A Rat", "CHAIN", "It Comes\
+    In Waves"]
+    song_ids = [5, 6, 7, 8, 9]
 
 
 

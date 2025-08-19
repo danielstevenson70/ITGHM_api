@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import Column, String
 
-class Band(Base, table=True):
-    __tablename__ = "bands"
-    band_name: str = Field()
+class Songs(Base, table=True):
+    __tablename__ = "songs"
+    name: str = Field()
     song_id: List[str] = Field(sa_column=Column(ARRAY(String)))
