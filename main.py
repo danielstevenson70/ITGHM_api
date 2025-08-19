@@ -1,6 +1,4 @@
 from re import search
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import metallum
 import uvicorn
 
@@ -9,11 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
 
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from sqlalchemy.exc import IntegrityError
 from db import get_session
 
-from models.urls import Urls
+from models.bands import band
+from models.genres import Genres
 from models.users import User, UserRegistrationSchema, UserSchema, UserAccountSchema
 from models.tokens import Token, BlacklistedToken, create_access_token
 
@@ -21,7 +20,6 @@ import os
 import config
 import requests
 from dotenv import load_dotenv
-from pydantic import BaseModel
 
 from services import get_current_user_token, create_user, get_user
 
@@ -94,94 +92,16 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 
 
 @app.get('/bands')
-async def get_bands(limit: int = 5, search_string: str = None):
-    print(f"DEBUG: /bands endpoint called with limit={limit}, search_string={search_string}")
-    print(f"DEBUG: DB_HOST={config.DB_HOST}")
-    print(f"DEBUG: DB_NAME={config.DB_NAME}")
-
-    conn = psycopg2.connect(
-        host=config.DB_HOST,  # Make sure you have these config values
-        port=config.DB_PORT,
-        dbname=config.DB_NAME,
-        user=config.DB_USER,
-        password=config.DB_PASSWORD,
-        sslmode='require'
-    )
-    print("DEBUG: Database connection successful")
-    
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    
-    if search_string:
-        print(f"DEBUG: Searching for bands with '{search_string}'")
-        # Search for bands with the search string
-        cur.execute("""
-            SELECT id, band_name as name 
-            FROM bands 
-            WHERE band_name ILIKE %s 
-            LIMIT %s
-        """, (f'%{search_string}%', limit))
-    else:
-        print("DEBUG: Getting all bands")
-
-        # Get all bands
-        cur.execute("""
-            SELECT id, band_name as name 
-            FROM bands 
-            LIMIT %s
-        """, (limit,))
-    
-    bands = cur.fetchall()
-    cur.close()
-    conn.close()
-    return bands
+async def band_name(search: str, session: Session = Depends(get_session)):
+    statement = select(band_name).where(func.lower(band_name) == search.lower())
+    bands = session.exec(statement).all()
+    return band_name
 
 
 @app.get('/genre')
-async def genre(searched_genre: str):
-    conn = psycopg2.connect(
-        host=config.DB_HOST,  # Make sure you have these config values
-        port=config.DB_PORT,
-        dbname=config.DB_NAME,
-        user=config.DB_USER,
-        password=config.DB_PASSWORD,
-        sslmode='require'  # Supabase requires SSL
-    )
-
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    print("""
-    select
-        band_id as id,
-        band_name as name
-    from
-        bands
-    join lateral (
-        select
-        name,
-        UNNEST("Bands") as band_id
-        from
-        genre
-    ) as genre_band_ids on genre_band_ids.band_id = bands.id
-    where
-        genre_band_ids.name = %s
-    """, (searched_genre))
-    cur.execute("""
-    select
-        band_id as id,
-        band_name as name
-    from
-        bands
-    join lateral (
-        select
-        name,
-        UNNEST("Bands") as band_id
-        from
-        genre
-    ) as genre_band_ids on genre_band_ids.band_id = bands.id
-    where
-        genre_band_ids.name = %s
-    """, (searched_genre,))
-    bands = cur.fetchall()
+async def genres(searched_genre: str, session: Session = Depends(get_session)):
+    statement = select(Genres).where(func.lower(Genres.name) == searched_genre.lower())
+    bands = session.exec(statement).all()
     return bands
 
 
