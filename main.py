@@ -11,7 +11,7 @@ from sqlmodel import Session, select, func
 from sqlalchemy.exc import IntegrityError
 from db import get_session
 
-from models.bands import band
+from models.bands import Band
 from models.genres import Genres
 from models.users import User, UserRegistrationSchema, UserSchema, UserAccountSchema
 from models.tokens import Token, BlacklistedToken, create_access_token
@@ -93,8 +93,8 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
 
 @app.get('/bands')
 async def band_name(search: str, session: Session = Depends(get_session)):
-    statement = select(band_name).where(func.lower(band_name) == search.lower())
-    bands = session.exec(statement).all()
+    statement = select(Band).where(func.lower(Band.name) == search.lower())
+    Band = session.exec(statement).all()
     return band_name
 
 
