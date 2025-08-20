@@ -105,7 +105,7 @@ async def band_name(search: str, session: Session = Depends(get_session)):
     return {"name": band_info.band_name, "songs": complete_song_array}
 
 
-@app.get('/genre')
+@app.get('/genre/{search_genre}')
 async def genres(search_genre: int, session: Session = Depends(get_session)):
     statement = select(Genres).where(Genres.id == search_genre)  
     genre_info = session.exec(statement).one_or_none()
