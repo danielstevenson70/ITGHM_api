@@ -92,7 +92,7 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get('/bands')
+@app.get('/bands/')
 async def band_name(search: str, session: Session = Depends(get_session)):
     statement = select(Band).where(func.lower(Band.band_name) == search.lower())
     band_info = session.exec(statement).one_or_none()
