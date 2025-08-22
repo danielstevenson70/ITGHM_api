@@ -42,11 +42,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 app = FastAPI()
 
-origins = ["http://localhost:5173"]
+# origins = ["http://localhost:5173"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
@@ -67,7 +67,6 @@ def register_user(payload: UserRegistrationSchema, session: Session = Depends(ge
 
 @app.post('/login', status_code=200)
 async def login(payload: UserAccountSchema, session: Session = Depends(get_session)):
-    print("anything")
     try:
         user: User = get_user(email=payload.email, session=session)
     except:
@@ -102,6 +101,15 @@ async def band_name(search: str, session: Session = Depends(get_session)):
         statement = select(Songs).where(Songs.id == song_id)
         song_name = session.exec(statement).one_or_none()
         complete_song_array.append(song_name)
+        try:
+            search_results = ytmusic.search(query=search, filter='songs')
+            youtube_links = []
+            for result in search_results:
+                if result['resultType'] == 'song':
+                    band_id = result['videoId']
+                    youtube_links.append(f'https://www.youtube.com/embed/{id}')
+        except Exception as e:
+            youtube_links = []
     return {"name": band_info.band_name, "songs": complete_song_array}
 
 
@@ -113,7 +121,7 @@ async def genres(search_genre: int, session: Session = Depends(get_session)):
     complete_band_array = []
     for band_id in band_id_array:
         statement = select(Band).where(Band.id == band_id)
-        band_array = session.exec(statement).all()
+        band_array = session.exec(statement).one()
         complete_band_array.append(band_array)
     return {"name": genre_info.name, "bands": complete_band_array}
 
@@ -152,22 +160,22 @@ def logout(token: str = Depends(oauth2_scheme), session: Session = Depends(get_s
         )
     return {"details": "Logged out"}
 
-@app.post("/generate")
-async def generate(request: Request):
-    body = await request.json()
-    prompt = body.get("prompt")
+# @app.post("/generate")
+# async def generate(request: Request):
+#     body = await request.json()
+#     prompt = body.get("prompt")
 
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": "gpt-4o-mini",
-            "messages": [{"role": "user", "content": prompt}]
-        }
-    )
+#     response = requests.post(
+#         "https://api.openai.com/v1/chat/completions",
+#         headers={
+#             "Authorization": f"Bearer {OPENAI_API_KEY}",
+#             "Content-Type": "application/json"
+#         },
+#         json={
+#             "model": "gpt-4o-mini",
+#             "messages": [{"role": "user", "content": prompt}]
+#         }
+#     )
 
     data = response.json()
     return {"output": data["choices"][0]["message"]["content"]}
