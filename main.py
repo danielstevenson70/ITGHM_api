@@ -102,11 +102,11 @@ async def band_name(search: str, session: Session = Depends(get_session)):
         song_name = session.exec(statement).one_or_none()
         complete_song_array.append(song_name)
         try:
-            search_results = ytmusic.search(query=search, filter='songs')
+            search_results = ytmusic.search(query=search)
             youtube_links = []
             for result in search_results:
                 if result['resultType'] == 'song':
-                    band_id = result['videoId']
+                    statement = result['videoId']
                     youtube_links.append(f'https://www.youtube.com/embed/{id}')
         except Exception as e:
             youtube_links = []
