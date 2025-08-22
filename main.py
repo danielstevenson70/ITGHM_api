@@ -91,9 +91,9 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get('/bands/')
-async def band_name(search: str, session: Session = Depends(get_session)):
-    statement = select(Band).where(func.lower(Band.band_name) == search.lower())
+@app.get('/bands/{search_bands}')
+async def band_name(search_bands: str, session: Session = Depends(get_session)):
+    statement = select(Band).where(func.lower(Band.band_name) == search_bands.lower())
     band_info = session.exec(statement).one_or_none()
     song_id_array = band_info.song_id
     complete_song_array = []
@@ -102,12 +102,12 @@ async def band_name(search: str, session: Session = Depends(get_session)):
         song_name = session.exec(statement).one_or_none()
         complete_song_array.append(song_name)
         try:
-            search_results = ytmusic.search(query=search)
+            search_results = ytmusic.search(query=search_bands, filter='songs')
             youtube_links = []
             for result in search_results:
                 if result['resultType'] == 'song':
-                    statement = result['videoId']
-                    youtube_links.append(f'https://www.youtube.com/embed/{id}')
+                    band_id = result['videoId']
+                    youtube_links.append(f'https://www.youtube.com/embed/{band_id}')
         except Exception as e:
             youtube_links = []
     return {"name": band_info.band_name, "songs": complete_song_array}
