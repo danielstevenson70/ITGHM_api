@@ -91,9 +91,9 @@ async def login(payload: UserAccountSchema, session: Session = Depends(get_sessi
     return Token(access_token=access_token, token_type="bearer")
 
 
-@app.get('/bands/{search_bands}')
-async def band_name(search_bands: str, session: Session = Depends(get_session)):
-    statement = select(Band).where(func.lower(Band.band_name) == search_bands.lower())
+@app.get('/bands/{search}')
+async def band_name(search: int, session: Session = Depends(get_session)):
+    statement = select(Band).where(Band.id == search)
     band_info = session.exec(statement).one_or_none()
     song_id_array = band_info.song_id
     complete_song_array = []
@@ -102,7 +102,7 @@ async def band_name(search_bands: str, session: Session = Depends(get_session)):
         song_name = session.exec(statement).one_or_none()
         complete_song_array.append(song_name)
         try:
-            search_results = ytmusic.search(query=search_bands, filter='songs')
+            search_results = ytmusic.search(query=band_info.band_name, filter='songs')
             youtube_links = []
             for result in search_results:
                 if result['resultType'] == 'song':
@@ -110,11 +110,11 @@ async def band_name(search_bands: str, session: Session = Depends(get_session)):
                     youtube_links.append(f'https://www.youtube.com/embed/{band_id}')
         except Exception as e:
             youtube_links = []
-    return {"name": band_info.band_name, "songs": complete_song_array}
+    return {"name": band_info.band_name, "songs": complete_song_array,"youtube":youtube_links}
 
 
 @app.get('/genre/{search_genre}')
-async def genres(search_genre: int, session: Session = Depends(get_session)):
+async def genre_search(search_genre: int, session: Session = Depends(get_session)):
     statement = select(Genres).where(Genres.id == search_genre)  
     genre_info = session.exec(statement).one_or_none()
     band_id_array = genre_info.Bands
@@ -125,6 +125,11 @@ async def genres(search_genre: int, session: Session = Depends(get_session)):
         complete_band_array.append(band_array)
     return {"name": genre_info.name, "bands": complete_band_array}
 
+@app.get('/genres')
+async def genres(session: Session = Depends(get_session)):
+    statement = select(Genres)  
+    genre_info = session.exec(statement).all()
+    return genre_info
 
 # @app.get("/songs")
 # async def songs(search_artist_string: str):
