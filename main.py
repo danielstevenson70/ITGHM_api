@@ -22,17 +22,12 @@ import config
 import requests
 from dotenv import load_dotenv
 
-from services import get_current_user_token, create_user, get_user
+from services import create_user, get_user
 
 from ytmusicapi import YTMusic
 
 ytmusic = YTMusic()
 youtube_router = APIRouter(prefix="/youtube")
-
-
-# Import or initialize metallum here
-# Example: from metallumapi import Metallum
-# metallum = Metallum()
 
 load_dotenv()
 
@@ -41,8 +36,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 app = FastAPI()
-
-# origins = ["http://localhost:5173"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -131,24 +124,6 @@ async def genres(session: Session = Depends(get_session)):
     genre_info = session.exec(statement).all()
     return genre_info
 
-# @app.get("/songs")
-# async def songs(search_artist_string: str):
-
-
-
-# @app.get('/tourdates')
-# async def tourdates(search_artist_tourdates: str):
-#     artist_result = 
-#     artist_id = 
-#     tourdates_results =
-#     return tourdates
-
-# @app.get('/randomband')
-# async def randomband():
-#     artist_result = ytmusic(randomband)
-#     artist_result = artist_result[0].get('artist')[0].get('id')
-#     randomband_results = ytmusic.get_artist_
-#     return randomband_results
 
 
 @app.post('/logout')
@@ -181,9 +156,6 @@ def logout(token: str = Depends(oauth2_scheme), session: Session = Depends(get_s
 #             "messages": [{"role": "user", "content": prompt}]
 #         }
 #     )
-
-    data = response.json()
-    return {"output": data["choices"][0]["message"]["content"]}
 
 if __name__ == '__main__':
     uvicorn.run('main:app', host='localhost', port=8000, reload=True)
